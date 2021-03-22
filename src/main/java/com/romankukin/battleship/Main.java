@@ -1,21 +1,25 @@
-package com.romankukin.battleship;
+package battleship;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class Main {
 
-  static class BadArgumentException extends IllegalArgumentException {
+  static class WrongCoordinatesException extends IllegalArgumentException {
 
-    private final static String MESSAGE = "Error! You passed wrong values! Try again:";
+    private final static String MESSAGE = "Error! You entered the wrong coordinates! Try again:";
 
-    public BadArgumentException() {
+    public WrongCoordinatesException() {
       super(MESSAGE);
     }
 
-    public BadArgumentException(Throwable cause) {
+    public WrongCoordinatesException(Throwable cause) {
       super(MESSAGE, cause);
     }
   }
@@ -48,7 +52,7 @@ public class Main {
     }
   }
 
-  private enum Ship {
+  private enum ShipType {
     AIRCRAFT_CARRIER("Aircraft Carrier", 5),
     BATTLESHIP("Battleship", 4),
     SUBMARINE("Submarine", 3),
@@ -58,10 +62,92 @@ public class Main {
     private final String name;
     private final int length;
 
-    Ship(String s, int i) {
+    ShipType(String s, int i) {
       name = s;
       length = i;
     }
+  }
+
+  enum ShotMessage {
+    HIT(System.lineSeparator() + "You hit a ship! Try again:" + System.lineSeparator(), "X"),
+    MISS(System.lineSeparator() + "You missed! Try again:" + System.lineSeparator(), "M");
+
+    private final String message;
+    private final String sign;
+
+    ShotMessage(String message, String sign) {
+      this.message = message;
+      this.sign = sign;
+    }
+  }
+
+  class Point {
+    private final int x;
+    private final int y;
+
+    public Point(int x, int y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    public int getX() {
+      return x;
+    }
+
+    public int getY() {
+      return y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Point)) {
+        return false;
+      }
+      Point point = (Point) o;
+      return x == point.x && y == point.y;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(x, y);
+    }
+  }
+
+  class Ship {
+
+    private final ShipType type;
+    private final List<Point> list;
+
+    public Ship(ShipType type) {
+      this.type = type;
+      this.list = new ArrayList<>(type.length);
+    }
+
+    public void put(Point p) {
+      if (list.size() == type.length) {
+        return ;//todo exception
+      }
+      list.add(p);
+    }
+
+    public void remove(Point p) {
+      list.remove(p);
+    }
+
+    public boolean isEmpty() {
+      return list.isEmpty();
+    }
+  }
+
+  private final Map<Point, Ship> map;
+  int ships;
+
+  public Main() {
+    this.map = new HashMap<>();
+    this.ships = 0;
   }
 
   private static final Map<Character, Integer> COORDS = Arrays.stream(new Object[][]{
@@ -83,15 +169,23 @@ public class Main {
       {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
   };
 
-  private void checkCoordsValidity(String[] coordsStrings) {
-    if (coordsStrings == null || coordsStrings.length != 2
-        || coordsStrings[0].length() < 2
-        || coordsStrings[1].length() < 2
-        || coordsStrings[0].length() > 3
-        || coordsStrings[1].length() > 3
-        || !Main.COORDS.containsKey(coordsStrings[0].charAt(0))
-        || !Main.COORDS.containsKey(coordsStrings[1].charAt(0))) {
-      throw new BadArgumentException();
+  private final String[][] displayField = {
+      {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
+      {"A", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"B", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"C", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"D", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"E", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"F", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"G", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"H", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"I", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+      {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+  };
+
+  private void checkCoords(int x, int y) {
+    if (!isValidCoordinate(x) || !isValidCoordinate(y)) {
+      throw new WrongCoordinatesException();
     }
   }
 
@@ -100,10 +194,6 @@ public class Main {
   }
 
   private void checkCoordsRange(String shipType, int shipLength, int x1, int x2, int y1, int y2) {
-    if (!(isValidCoordinate(x1) && isValidCoordinate(x2)
-        && isValidCoordinate(y1) && isValidCoordinate(y2))) {
-      throw new BadArgumentException();
-    }
     // the coordinates should only differ on one axis
     if ((x1 == x2) == (y1 == y2)) {
       throw new WrongShipLocationException();
@@ -138,87 +228,183 @@ public class Main {
     }
   }
 
-  private void place(int x1, int x2, int y1, int y2) {
-    int n = x1 == x2 ? 0 : 1;
-    int m = n == 1 ? 0 : 1;
-
-    int x;
-    int y;
-
-    for (x = x1, y = y1; x < x2 || y < y2; x += n, y += m) {
-      field[x][y] = "O";
-    }
-    field[x][y] = "O";
-  }
-
   private void printField() {
     for (String[] strings : field) {
       System.out.println(String.join(" ", strings));
     }
   }
 
-  public void play() {
-    try (Scanner scanner = new Scanner(System.in)) {
+  private void printDisplayField() {
+    for (String[] strings : displayField) {
+      System.out.println(String.join(" ", strings));
+    }
+  }
 
-      for (Ship ship : Ship.values()) {
-        printField();
+  private void putShip(Ship ship, Point p) {
+    ship.put(p);
+    map.put(p, ship);
+    field[p.getX()][p.getY()] = "O";
+  }
 
-        System.out.println(
-            System.lineSeparator()
-                + "Enter the coordinates of the "
-                + ship.name
-                + " (" + ship.length
-                + " cells):"
-                + System.lineSeparator());
+  private void place(ShipType shipType, int x1, int x2, int y1, int y2) {
+    int n = x1 == x2 ? 0 : 1;
+    int m = n == 1 ? 0 : 1;
 
-        boolean read = false;
+    int x;
+    int y;
 
-        while (!read) {
-          String[] coordsStrings = scanner.nextLine().split("\\s+");
-          System.out.println();
+    Ship ship = new Ship(shipType);
+
+    for (x = x1, y = y1; x < x2 || y < y2; x += n, y += m) {
+      putShip(ship, new Point(x, y));
+    }
+    putShip(ship, new Point(x, y));
+    ships++;
+  }
+
+  private boolean placeShip(ShipType shipType, String[] coordsStrings) {
+    int x1 = Main.COORDS.get(coordsStrings[0].charAt(0));
+    int x2 = Main.COORDS.get(coordsStrings[1].charAt(0));
+    int y1 = Integer.parseInt(coordsStrings[0].substring(1));
+    int y2 = Integer.parseInt(coordsStrings[1].substring(1));
+
+    checkCoords(x1, y1);
+    checkCoords(x2, y2);
+
+    // Sort coordinates
+    if (x2 < x1) {
+      int tmp = x1;
+      x1 = x2;
+      x2 = tmp;
+    }
+    if (y2 < y1) {
+      int tmp = y1;
+      y1 = y2;
+      y2 = tmp;
+    }
+
+    checkCoordsRange(shipType.name, shipType.length, x1, x2, y1, y2);
+    checkIfCanPlaceShip(x1, x2, y1, y2);
+    place(shipType, x1, x2, y1, y2);
+
+    return true;
+  }
+
+  private void placeShips(Scanner scanner) {
+    for (ShipType ship : ShipType.values()) {
+      printField();
+
+      System.out.println(
+          System.lineSeparator()
+              + "Enter the coordinates of the "
+              + ship.name
+              + " (" + ship.length
+              + " cells):"
+              + System.lineSeparator());
+
+      boolean read = false;
+
+      while (!read) {
+        String[] coordsStrings = scanner.nextLine().split("\\s+");
+        System.out.println();
+
+        try {
           try {
-            checkCoordsValidity(coordsStrings);
-
-            int x1 = Main.COORDS.get(coordsStrings[0].charAt(0));
-            int x2 = Main.COORDS.get(coordsStrings[1].charAt(0));
-            int y1 = Integer.parseInt(coordsStrings[0].substring(1));
-            int y2 = Integer.parseInt(coordsStrings[1].substring(1));
-
-            // Sort coordinates
-            if (x2 < x1) {
-              int tmp = x1;
-              x1 = x2;
-              x2 = tmp;
-            }
-            if (y2 < y1) {
-              int tmp = y1;
-              y1 = y2;
-              y2 = tmp;
-            }
-
-            checkCoordsRange(ship.name, ship.length, x1, x2, y1, y2);
-            checkIfCanPlaceShip(x1, x2, y1, y2);
-            place(x1, x2, y1, y2);
-
-            read = true;
-          } catch (NullPointerException | NumberFormatException e) {
-            throw new BadArgumentException(e);
-          } catch (BadArgumentException
-              | BadLengthCoordsException
-              | WrongShipLocationException
-              | TooClosePlacingException e) {
-            System.out.println(e.getMessage() + System.lineSeparator());
+            read = placeShip(ship, coordsStrings);
+          } catch (NullPointerException
+              | NumberFormatException
+              | IndexOutOfBoundsException e) {
+            throw new WrongCoordinatesException(e);
           }
+        } catch (WrongCoordinatesException
+            | BadLengthCoordsException
+            | WrongShipLocationException
+            | TooClosePlacingException e) {
+          System.out.println(e.getMessage() + System.lineSeparator());
         }
       }
+    }
+    printField();
+    System.out.println();
+  }
+
+  private void applyChanges(ShotMessage shotMessage, int x, int y) {
+    if (!"X".equals(field[x][y])) {
+      field[x][y] = shotMessage.sign;
+      displayField[x][y] = shotMessage.sign;
+    }
+    printDisplayField();
+
+    if (shotMessage.equals(ShotMessage.HIT)) {
+      Point p = new Point(x, y);
+      if (map.containsKey(p)) {
+        Ship ship = map.get(p);
+        ship.remove(p);
+        if (ship.isEmpty()) {
+          ships--;
+          if (ships == 0) {
+            System.out.println(System.lineSeparator() + "You sank the last ship. You won. Congratulations!");
+          } else {
+            System.out.println(System.lineSeparator() + "You sank a ship! Specify a new target:"
+                + System.lineSeparator());
+          }
+          return;
+        }
+
+      }
+    }
+    System.out.println(shotMessage.message);
+  }
+
+  private void takeAShot(int x, int y) {
+    if ("O".equals(field[x][y])) {
+      applyChanges(ShotMessage.HIT, x, y);
+    } else {
+      applyChanges(ShotMessage.MISS, x, y);
+    }
+  }
+
+  private boolean shoot(String coords) {
+    int x = Main.COORDS.get(coords.charAt(0));
+    int y = Integer.parseInt(coords.substring(1));
+
+    checkCoords(x, y);
+    takeAShot(x, y);
+    return ships == 0;
+  }
+
+  private void play(Scanner scanner) {
+    System.out.println("The game starts!" + System.lineSeparator());
+    printDisplayField();
+    System.out.println(System.lineSeparator() + "Take a shot!" + System.lineSeparator());
+
+    boolean isGameFinished = false;
+
+    while (!isGameFinished) {
+      String coords = scanner.nextLine();
+      try {
+        try {
+          isGameFinished = shoot(coords);
+        } catch (NullPointerException | NumberFormatException | IndexOutOfBoundsException e) {
+          throw new WrongCoordinatesException(e);
+        }
+      } catch (WrongCoordinatesException e) {
+        System.out.println(e.getMessage() + System.lineSeparator());
+      }
+    }
+  }
+
+  public void playGame() {
+    try (Scanner scanner = new Scanner(System.in)) {
+      placeShips(scanner);
+      play(scanner);
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
-    printField();
   }
 
   public static void main(String[] args) {
     Main game = new Main();
-    game.play();
+    game.playGame();
   }
 }
