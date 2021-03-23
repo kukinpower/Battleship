@@ -82,6 +82,7 @@ public class Main {
   }
 
   class Point {
+
     private final int x;
     private final int y;
 
@@ -128,7 +129,7 @@ public class Main {
 
     public void put(Point p) {
       if (list.size() == type.length) {
-        return ;//todo exception
+        return;//todo exception
       }
       list.add(p);
     }
@@ -142,12 +143,14 @@ public class Main {
     }
   }
 
-  private final Map<Point, Ship> map;
-  int ships;
+  Player player1;
+  Player player2;
 
   public Main() {
-    this.map = new HashMap<>();
-    this.ships = 0;
+    player1 = new Player(1);
+    player2 = new Player(2);
+    player1.setNext(player2);
+    player2.setNext(player1);
   }
 
   private static final Map<Character, Integer> COORDS = Arrays.stream(new Object[][]{
@@ -155,33 +158,84 @@ public class Main {
       {'F', 6}, {'G', 7}, {'H', 8}, {'I', 9}, {'J', 10}
   }).collect(Collectors.toMap(kv -> (Character) kv[0], kv -> (Integer) kv[1]));
 
-  private final String[][] field = {
-      {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
-      {"A", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"B", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"C", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"D", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"E", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"F", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"G", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"H", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"I", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-  };
+  class Player {
 
-  private final String[][] displayField = {
-      {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
-      {"A", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"B", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"C", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"D", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"E", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"F", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"G", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"H", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"I", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-      {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-  };
+    private final String[][] field = {
+        {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
+        {"A", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"B", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"C", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"D", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"E", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"F", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"G", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"H", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"I", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+    };
+
+    private final String[][] displayField = {
+        {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
+        {"A", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"B", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"C", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"D", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"E", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"F", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"G", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"H", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"I", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+        {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
+    };
+
+    private final Map<Point, Ship> map;
+    private int ships;
+    private final int number;
+    private Player next;
+
+    public Player(int number) {
+      this.number = number;
+      this.map = new HashMap<>();
+      this.ships = 0;
+      this.next = null;
+    }
+
+    public Player next() {
+      return next;
+    }
+
+    public void setNext(Player player) {
+      this.next = player;
+    }
+
+    public int getNumber() {
+      return number;
+    }
+
+    public String[][] getField() {
+      return field;
+    }
+
+    public String[][] getDisplayField() {
+      return displayField;
+    }
+
+    public Map<Point, Ship> getMap() {
+      return map;
+    }
+
+    public int getShips() {
+      return ships;
+    }
+
+    public void incShips() {
+      ships++;
+    }
+
+    public void decShips() {
+      ships--;
+    }
+  }
 
   private void checkCoords(int x, int y) {
     if (!isValidCoordinate(x) || !isValidCoordinate(y)) {
@@ -204,7 +258,7 @@ public class Main {
     }
   }
 
-  private void checkIfCanPlaceShip(int x1, int x2, int y1, int y2) {
+  private void checkIfCanPlaceShip(Player player, int x1, int x2, int y1, int y2) {
     int n = x1 == x2 ? 0 : 1;
     int m = n == 1 ? 0 : 1;
 
@@ -212,41 +266,51 @@ public class Main {
     int y;
 
     for (x = x1, y = y1; x < x2 || y < y2; x += n, y += m) {
-      isPlaceOccupiedBySomeShip(x, y);
+      isPlaceOccupiedBySomeShip(player, x, y);
     }
 
-    isPlaceOccupiedBySomeShip(x, y);
+    isPlaceOccupiedBySomeShip(player, x, y);
   }
 
-  private void isPlaceOccupiedBySomeShip(int x, int y) {
-    if ("O".equals(field[x][y])
-        || x + 1 <= 10 && "O".equals(field[x + 1][y])
-        || x - 1 >= 1 && "O".equals(field[x - 1][y])
-        || y + 1 <= 10 && "O".equals(field[x][y + 1])
-        || y - 1 >= 1 && "O".equals(field[x][y - 1])) {
+  private void isPlaceOccupiedBySomeShip(Player player, int x, int y) {
+    if ("O".equals(player.getField()[x][y])
+        || x + 1 <= 10 && "O".equals(player.getField()[x + 1][y])
+        || x - 1 >= 1 && "O".equals(player.getField()[x - 1][y])
+        || y + 1 <= 10 && "O".equals(player.getField()[x][y + 1])
+        || y - 1 >= 1 && "O".equals(player.getField()[x][y - 1])) {
       throw new TooClosePlacingException();
     }
   }
 
-  private void printField() {
-    for (String[] strings : field) {
+  private void printPlayerField(Player player) {
+    for (String[] strings : player.next().getDisplayField()) {
+      System.out.println(String.join(" ", strings));
+    }
+    System.out.println("---------------------");
+    for (String[] strings : player.getField()) {
       System.out.println(String.join(" ", strings));
     }
   }
 
-  private void printDisplayField() {
-    for (String[] strings : displayField) {
+  private void printField(Player player) {
+    for (String[] strings : player.getField()) {
       System.out.println(String.join(" ", strings));
     }
   }
 
-  private void putShip(Ship ship, Point p) {
+  private void printDisplayField(Player player) {
+    for (String[] strings : player.getDisplayField()) {
+      System.out.println(String.join(" ", strings));
+    }
+  }
+
+  private void putShip(Player player, Ship ship, Point p) {
     ship.put(p);
-    map.put(p, ship);
-    field[p.getX()][p.getY()] = "O";
+    player.getMap().put(p, ship);
+    player.getField()[p.getX()][p.getY()] = "O";
   }
 
-  private void place(ShipType shipType, int x1, int x2, int y1, int y2) {
+  private void place(Player player, ShipType shipType, int x1, int x2, int y1, int y2) {
     int n = x1 == x2 ? 0 : 1;
     int m = n == 1 ? 0 : 1;
 
@@ -256,13 +320,13 @@ public class Main {
     Ship ship = new Ship(shipType);
 
     for (x = x1, y = y1; x < x2 || y < y2; x += n, y += m) {
-      putShip(ship, new Point(x, y));
+      putShip(player, ship, new Point(x, y));
     }
-    putShip(ship, new Point(x, y));
-    ships++;
+    putShip(player, ship, new Point(x, y));
+    player.incShips();
   }
 
-  private boolean placeShip(ShipType shipType, String[] coordsStrings) {
+  private boolean placeShip(Player player, ShipType shipType, String[] coordsStrings) {
     int x1 = Main.COORDS.get(coordsStrings[0].charAt(0));
     int x2 = Main.COORDS.get(coordsStrings[1].charAt(0));
     int y1 = Integer.parseInt(coordsStrings[0].substring(1));
@@ -284,15 +348,15 @@ public class Main {
     }
 
     checkCoordsRange(shipType.name, shipType.length, x1, x2, y1, y2);
-    checkIfCanPlaceShip(x1, x2, y1, y2);
-    place(shipType, x1, x2, y1, y2);
+    checkIfCanPlaceShip(player, x1, x2, y1, y2);
+    place(player, shipType, x1, x2, y1, y2);
 
     return true;
   }
 
-  private void placeShips(Scanner scanner) {
+  private void placeShips(Player player, Scanner scanner) {
     for (ShipType ship : ShipType.values()) {
-      printField();
+      printField(player);
 
       System.out.println(
           System.lineSeparator()
@@ -310,7 +374,7 @@ public class Main {
 
         try {
           try {
-            read = placeShip(ship, coordsStrings);
+            read = placeShip(player, ship, coordsStrings);
           } catch (NullPointerException
               | NumberFormatException
               | IndexOutOfBoundsException e) {
@@ -324,26 +388,27 @@ public class Main {
         }
       }
     }
-    printField();
+    printField(player);
     System.out.println();
   }
 
-  private void applyChanges(ShotMessage shotMessage, int x, int y) {
-    if (!"X".equals(field[x][y])) {
-      field[x][y] = shotMessage.sign;
-      displayField[x][y] = shotMessage.sign;
+  private void applyChanges(Player player, ShotMessage shotMessage, int x, int y) {
+    if (!"X".equals(player.getField()[x][y])) {
+      player.getField()[x][y] = shotMessage.sign;
+      player.getDisplayField()[x][y] = shotMessage.sign;
     }
-    printDisplayField();
+    printDisplayField(player);
 
     if (shotMessage.equals(ShotMessage.HIT)) {
       Point p = new Point(x, y);
-      if (map.containsKey(p)) {
-        Ship ship = map.get(p);
+      if (player.getMap().containsKey(p)) {
+        Ship ship = player.getMap().get(p);
         ship.remove(p);
         if (ship.isEmpty()) {
-          ships--;
-          if (ships == 0) {
-            System.out.println(System.lineSeparator() + "You sank the last ship. You won. Congratulations!");
+          player.decShips();
+          if (player.getShips() == 0) {
+            System.out.println(
+                System.lineSeparator() + "You sank the last ship. You won. Congratulations!");
           } else {
             System.out.println(System.lineSeparator() + "You sank a ship! Specify a new target:"
                 + System.lineSeparator());
@@ -356,35 +421,39 @@ public class Main {
     System.out.println(shotMessage.message);
   }
 
-  private void takeAShot(int x, int y) {
-    if ("O".equals(field[x][y])) {
-      applyChanges(ShotMessage.HIT, x, y);
+  private void takeAShot(Player player, int x, int y) {
+    if ("O".equals(player.getField()[x][y])) {
+      applyChanges(player, ShotMessage.HIT, x, y);
     } else {
-      applyChanges(ShotMessage.MISS, x, y);
+      applyChanges(player, ShotMessage.MISS, x, y);
     }
   }
 
-  private boolean shoot(String coords) {
+  private boolean shoot(Player player, String coords) {
     int x = Main.COORDS.get(coords.charAt(0));
     int y = Integer.parseInt(coords.substring(1));
 
     checkCoords(x, y);
-    takeAShot(x, y);
-    return ships == 0;
+    takeAShot(player.next(), x, y);
+    return player.next().getShips() == 0;
   }
 
   private void play(Scanner scanner) {
     System.out.println("The game starts!" + System.lineSeparator());
-    printDisplayField();
-    System.out.println(System.lineSeparator() + "Take a shot!" + System.lineSeparator());
+    Player player = player1;
 
     boolean isGameFinished = false;
 
     while (!isGameFinished) {
+      printPlayerField(player);
+      System.out.println(
+          System.lineSeparator() + "Player " + player.getNumber() + ", it's your turn:" + System
+              .lineSeparator());
       String coords = scanner.nextLine();
       try {
         try {
-          isGameFinished = shoot(coords);
+          isGameFinished = shoot(player, coords);
+          player = player.next();
         } catch (NullPointerException | NumberFormatException | IndexOutOfBoundsException e) {
           throw new WrongCoordinatesException(e);
         }
@@ -394,9 +463,20 @@ public class Main {
     }
   }
 
+  private void playerPlaceShips(Player player, Scanner scanner) {
+    System.out.println(
+        "Player " + player.getNumber() + ", place your ships on the game field" + System
+            .lineSeparator());
+    placeShips(player, scanner);
+    System.out.println("Press Enter and pass the move to another player");
+    scanner.nextLine();
+  }
+
   public void playGame() {
     try (Scanner scanner = new Scanner(System.in)) {
-      placeShips(scanner);
+      playerPlaceShips(player1, scanner);
+      playerPlaceShips(player2, scanner);
+
       play(scanner);
     } catch (Exception e) {
       System.out.println(e.getMessage());
