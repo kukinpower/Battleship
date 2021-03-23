@@ -1,11 +1,7 @@
 package com.romankukin.battleship;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -52,22 +48,6 @@ public class Main {
     }
   }
 
-  private enum ShipType {
-    AIRCRAFT_CARRIER("Aircraft Carrier", 5),
-    BATTLESHIP("Battleship", 4),
-    SUBMARINE("Submarine", 3),
-    CRUISER("Cruiser", 3),
-    DESTROYER("Destroyer", 2);
-
-    private final String name;
-    private final int length;
-
-    ShipType(String s, int i) {
-      name = s;
-      length = i;
-    }
-  }
-
   enum ShotMessage {
     HIT(System.lineSeparator() + "You hit a ship! Try again:" + System.lineSeparator(), "X"),
     MISS(System.lineSeparator() + "You missed! Try again:" + System.lineSeparator(), "M");
@@ -78,68 +58,6 @@ public class Main {
     ShotMessage(String message, String sign) {
       this.message = message;
       this.sign = sign;
-    }
-  }
-
-  class Point {
-
-    private final int x;
-    private final int y;
-
-    public Point(int x, int y) {
-      this.x = x;
-      this.y = y;
-    }
-
-    public int getX() {
-      return x;
-    }
-
-    public int getY() {
-      return y;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof Point)) {
-        return false;
-      }
-      Point point = (Point) o;
-      return x == point.x && y == point.y;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(x, y);
-    }
-  }
-
-  class Ship {
-
-    private final ShipType type;
-    private final List<Point> list;
-
-    public Ship(ShipType type) {
-      this.type = type;
-      this.list = new ArrayList<>(type.length);
-    }
-
-    public void put(Point p) {
-      if (list.size() == type.length) {
-        return;//todo exception
-      }
-      list.add(p);
-    }
-
-    public void remove(Point p) {
-      list.remove(p);
-    }
-
-    public boolean isEmpty() {
-      return list.isEmpty();
     }
   }
 
@@ -158,84 +76,6 @@ public class Main {
       {'F', 6}, {'G', 7}, {'H', 8}, {'I', 9}, {'J', 10}
   }).collect(Collectors.toMap(kv -> (Character) kv[0], kv -> (Integer) kv[1]));
 
-  class Player {
-
-    private final String[][] field = {
-        {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
-        {"A", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"B", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"C", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"D", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"E", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"F", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"G", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"H", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"I", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-    };
-
-    private final String[][] displayField = {
-        {" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
-        {"A", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"B", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"C", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"D", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"E", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"F", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"G", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"H", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"I", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-        {"J", "~", "~", "~", "~", "~", "~", "~", "~", "~", "~"},
-    };
-
-    private final Map<Point, Ship> map;
-    private int ships;
-    private final int number;
-    private Player next;
-
-    public Player(int number) {
-      this.number = number;
-      this.map = new HashMap<>();
-      this.ships = 0;
-      this.next = null;
-    }
-
-    public Player next() {
-      return next;
-    }
-
-    public void setNext(Player player) {
-      this.next = player;
-    }
-
-    public int getNumber() {
-      return number;
-    }
-
-    public String[][] getField() {
-      return field;
-    }
-
-    public String[][] getDisplayField() {
-      return displayField;
-    }
-
-    public Map<Point, Ship> getMap() {
-      return map;
-    }
-
-    public int getShips() {
-      return ships;
-    }
-
-    public void incShips() {
-      ships++;
-    }
-
-    public void decShips() {
-      ships--;
-    }
-  }
 
   private void checkCoords(int x, int y) {
     if (!isValidCoordinate(x) || !isValidCoordinate(y)) {
@@ -347,7 +187,7 @@ public class Main {
       y2 = tmp;
     }
 
-    checkCoordsRange(shipType.name, shipType.length, x1, x2, y1, y2);
+    checkCoordsRange(shipType.getName(), shipType.getLength(), x1, x2, y1, y2);
     checkIfCanPlaceShip(player, x1, x2, y1, y2);
     place(player, shipType, x1, x2, y1, y2);
 
@@ -361,8 +201,8 @@ public class Main {
       System.out.println(
           System.lineSeparator()
               + "Enter the coordinates of the "
-              + ship.name
-              + " (" + ship.length
+              + ship.getName()
+              + " (" + ship.getLength()
               + " cells):"
               + System.lineSeparator());
 
